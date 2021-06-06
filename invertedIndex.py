@@ -5,26 +5,47 @@ from nltk.corpus import stopwords
 from nltk.stem import SnowballStemmer
 from nltk.util import pr
 
-files = ["libro{}.txt".format(i) for i in range(1, 7)]
-
 # stoplist.txt tiene tildes
 stoplist = stopwords.words('spanish')
-stoplist += ['.','?','-','«', '»', ',']
-
-with open("docs/{}".format(files[0])) as file:
-    lines = file.readlines()
-    text = ""
-    for line in lines:
-        text += line.lower().strip()
-
-words = nltk.word_tokenize(text)
-for token in words:
-    if token in stoplist:
-        words.remove(token)
-
-# print(words)
+stoplist += ['.','?','-','«', '»', ',', '(', ')', ':', ';'] # No quita todas las comas
 stemmer = SnowballStemmer('spanish')
-for i in range(len(words)):
-    words[i] = stemmer.stem(words[i])
+index = {}
 
-print(words)
+for i in range(1,7):
+    with open("docs/libro{}.txt".format(i)) as file:
+        text = ""
+        lines = file.readlines()
+        for line in lines:
+            text += line.lower().strip()
+        # Tokenize
+        words = nltk.word_tokenize(text)
+        # Filter
+        for token in words:
+            if token in stoplist:
+                words.remove(token)
+        # Stem
+        for j in range(len(words)):
+            words[j] = stemmer.stem(words[j])
+        # Add to index
+        for token in words:
+            if token in index.keys():
+                index[token].add(i)
+            else:
+                index[token] = set([i])
+
+# Get 500 most frequent terms
+# Sort by document frequency
+sortedIndex = {key : val for key, val in sorted(index.items(), key = lambda elem : len(elem[1]), reverse=True)}
+mostFrequent = {}
+count = 0
+for key, val in sortedIndex.items():
+    mostFrequent[key] = val
+    count += 1
+    if (count == 500):
+        break
+
+# Sort by key
+invertedIndex = {key : val for key, val in sorted(mostFrequent.items(), key = lambda elem : elem[0])}
+
+for entry in invertedIndex:
+    print(entry + ":" + str(index[entry]))
