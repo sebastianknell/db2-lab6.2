@@ -2,6 +2,7 @@ import nltk
 # nltk.download("punkt")
 # nltk.download('stopwords')
 from nltk.corpus import stopwords
+from nltk.corpus.reader import lin
 from nltk.stem import SnowballStemmer
 from nltk.util import pr
 
@@ -47,5 +48,14 @@ for key, val in sortedIndex.items():
 # Sort by key
 invertedIndex = {key : val for key, val in sorted(mostFrequent.items(), key = lambda elem : elem[0])}
 
-for entry in invertedIndex:
-    print(entry + ":" + str(index[entry]))
+# Write to file
+with open("invertedIndex.txt", 'w') as file:
+    for key, value in invertedIndex.items():
+        line = key
+        line += ':'
+        for i in value:
+            line += str(i)
+            line += ','
+        line = line[0:len(line)-1] # Trim last ,
+        line += '\n'
+        file.writelines(line)
